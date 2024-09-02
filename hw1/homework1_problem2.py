@@ -31,11 +31,11 @@ class TwoLayerNet:
 
     def forward(self, X):
 
-        self.z1 = np.dot(X, self.W1) + self.b1
-        self.a1 = np.mazimum(0, self.z1)
-        self.z2 = np.dot(self.a1, self.W2) + self.b2
-        self.a2 = self.z2
-        return self.a2
+        self.z2 = np.dot(X, self.W1) + self.b1
+        self.a2 = np.maximum(0, self.z2)
+        self.z3 = np.dot(self.a2, self.W2) + self.b2
+        self.a3 = self.z3
+        return self.a3
     
     def compute_loss(self, y_pred, y_true):
 
@@ -43,11 +43,43 @@ class TwoLayerNet:
     
     def backward(self, X, y_true, y_pred, learning_rate):
 
+        n = X.shape[0]
+        y_true = y_true.reshape(-1, 1)
+        dz3 = (y_pred - y_true) / n
+        dW2 = np.dot(self.a2.T, dz3)
+        db2 = np.sum(dz3, axis=0, keepdims=True)
+        da2 = np.dot(dz3, self.W2.T)
+        dz2 = da2 * (self.z2 > 0)
+        dW1 = np.dot(X.T, dz2)
+        db1 = np.sum(dz2, axis=0, keepdims=True)
 
+        # update weights
+        self.W2 -= learning_rate * dW2
+        self.b2 -= learning_rate * db2
+        self.W1 -= learning_rate * dW1
+        self.b1 -= learning_rate * db1      
 
+        pdb.set_trace()
 
+def train_age_regressor(dataset, input_size, hidden_size, output_size, learning_rate, epochs):
 
-# def train_age_regressor():
+    net = TwoLayerNet(input_size, hidden_size, output_size)
+
+    for epoch in range(epochs):
+
+        y_pred = net.forward(dataset.X_tr)
+        loss = net.compute_loss(y_pred, dataset.ytr)
+        net.backward(dataset.X_tr, dataset.ytr, y_pred, learning_rate)    
+        if epoch % 100 == 0:
+            val_pred = net.forward(dataset.X_val)
+            val_loss = net.compute_loss(val_pred, dataset.yval)
+            print(f"Epoch: {epoch}, Training Loss: {loss}, Validation Loss: {val_loss}")
+
+        if epoch > epochs - 10:
+            print(f"Epoch: {epoch}, Training Loss: {loss}, Validation Loss: {val_loss}")
+
+    return net
+
 
 if __name__ == "__main__":
 
@@ -64,10 +96,14 @@ if __name__ == "__main__":
     input_size = 48*48
     hidden_size = 64
     output_size = 1
-    learning_rate = 1e-3
-    num_epochs = 10
+    learning_rate = 1e-2
+    num_epochs = 1000
 
     # train the network
-    net = TwoLayerNet(input_size, hidden_size, output_size)
+    net = train_age_regressor(dataset, input_size, hidden_size, output_size, learning_rate, num_epochs)
+    test_pred = net.forward(dataset.X_te)
+    test_loss = net.compute_loss(test_pred, dataset.yte)
+
+    print(f"Test Loss: {test_loss}")
 
 
