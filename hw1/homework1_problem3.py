@@ -213,6 +213,6 @@ def problem3c():
 
 
 if __name__ == "__main__":
-    problem3a()
+    # problem3a()
     problem3b()
-    problem3c()
+    # problem3c()
