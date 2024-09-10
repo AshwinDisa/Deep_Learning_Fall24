@@ -59,6 +59,8 @@ class TwoLayerNet:
         self.W1 -= learning_rate * dW1
         self.b1 -= learning_rate * db1      
 
+        pdb.set_trace()
+
 def train_age_regressor(dataset, input_size, hidden_size, output_size, learning_rate, epochs):
 
     net = TwoLayerNet(input_size, hidden_size, output_size)
@@ -74,10 +76,7 @@ def train_age_regressor(dataset, input_size, hidden_size, output_size, learning_
             print(f"Epoch: {epoch}, Training Loss: {loss}, Validation Loss: {val_loss}")
 
         if epoch > epochs - 10:
-            print(f"Training Loss: {loss}, Validation Loss: {val_loss}")
-
-        if epoch == epochs - 1:
-            print(f"Training Loss: {loss}, Validation Loss: {val_loss}")
+            print(f"Epoch: {epoch}, Training Loss: {loss}, Validation Loss: {val_loss}")
 
     return net
 
