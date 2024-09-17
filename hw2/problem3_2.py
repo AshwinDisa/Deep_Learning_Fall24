@@ -90,13 +90,9 @@ def hyperparameter_optimization(dataset, input_size, output_size, num_epochs):
     best_params = {}
     best_net = None
 
-    # learning_rates = [1e-2, 1e-3]
-    # regularization_strengths = [0.01, 0.001]
-    # batch_sizes = [64, 128]
-
-    learning_rates = [1e-2]
-    regularization_strengths = [0.001]
-    batch_sizes = [128]
+    learning_rates = [1e-2, 1e-3]
+    regularization_strengths = [0.01, 0.001]
+    batch_sizes = [64, 128]
 
     for lr in learning_rates:
         for reg_strength in regularization_strengths:
