@@ -53,7 +53,7 @@ class TwoLayerNet:
 
         total_loss = loss + reg_loss   
 
-        return loss
+        return total_loss
     
     def backward(self, X, y_true, y_pred, learning_rate):
 
