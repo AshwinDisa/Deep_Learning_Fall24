@@ -40,7 +40,7 @@ class SimpleLinearNet:
         reg_loss = (lambda_reg / 2) * np.sum(self.W1**2)
         loss = -np.mean(np.sum(y_true * np.log(y_pred), axis=1))
         total_loss = loss + reg_loss
-        return total_loss
+        return total_loss, loss
     
     def backward(self, X, y_true, y_pred, learning_rate):
 
@@ -73,12 +73,12 @@ def train_model(dataset, input_size, output_size, learning_rate, epochs, lambda_
             y_true = np.eye(output_size)[y_batch.reshape(-1)]
             
             y_pred = net.forward(X_batch)
-            loss = net.compute_loss(y_pred, y_true, lambda_reg)
+            loss, unreg_loss = net.compute_loss(y_pred, y_true, lambda_reg)
             net.backward(X_batch, y_true, y_pred, learning_rate)    
 
         if epoch % 10 == 0:
             val_pred = net.forward(dataset.X_val)
-            val_loss = net.compute_loss(val_pred, yval, lambda_reg)
+            val_loss, unreg_loss = net.compute_loss(val_pred, yval, lambda_reg)
             print(f"Epoch: {epoch}, Training Loss: {loss}, Validation Loss: {val_loss}")
 
     return net, val_loss
@@ -90,9 +90,13 @@ def hyperparameter_optimization(dataset, input_size, output_size, num_epochs):
     best_params = {}
     best_net = None
 
-    learning_rates = [1e-2, 1e-3]
-    regularization_strengths = [0.01, 0.001]
-    batch_sizes = [64, 128]
+    # learning_rates = [1e-2, 1e-3]
+    # regularization_strengths = [0.01, 0.001]
+    # batch_sizes = [64, 128]
+
+    learning_rates = [1e-2]
+    regularization_strengths = [0.001]
+    batch_sizes = [128]
 
     for lr in learning_rates:
         for reg_strength in regularization_strengths:
@@ -140,8 +144,9 @@ if __name__ == "__main__":
 
     test_pred = best_net.forward(dataset.X_te)
     y_test_true = np.eye(output_size)[dataset.yte.reshape(-1)]
-    test_loss = best_net.compute_loss(test_pred, y_test_true, lambda_reg=best_params['reg_strength'])
+    test_loss, unreg_loss = best_net.compute_loss(test_pred, y_test_true, lambda_reg=best_params['reg_strength'])
     test_accuracy = best_net.accuracy(test_pred, dataset.yte)
 
     print(f"Test Loss: {test_loss}")
     print(f"Test Accuracy: {test_accuracy}")
+    print(f"Unregularized Loss: {unreg_loss}")
