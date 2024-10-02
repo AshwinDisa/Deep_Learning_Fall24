@@ -1,14 +1,13 @@
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import scipy.optimize
+import pdb
 
-# Constants for network architecture
 NUM_HIDDEN_LAYERS = 1
 NUM_INPUT = 784
-NUM_HIDDEN = NUM_HIDDEN_LAYERS * [72]
+NUM_HIDDEN = NUM_HIDDEN_LAYERS * [64]
 NUM_OUTPUT = 10
 
-# Unpack weights and biases from the flattened weight vector
 def unpack(weights):
     Ws = []
     start = 0
@@ -46,51 +45,42 @@ def unpack(weights):
 
     return Ws, bs
 
-# Cross entropy loss function
 def fCE(X, Y, weights):
     Ws, bs = unpack(weights)
     m = X.shape[0]
 
-    # Forward pass
     A = X
     for W, b in zip(Ws[:-1], bs[:-1]):
         Z = np.dot(W, A.T).T + b
-        A = np.maximum(Z, 0)  # ReLU activation
+        A = np.maximum(Z, 0)
 
     ZL = np.dot(Ws[-1], A.T).T + bs[-1]
-    A_final = np.exp(ZL) / np.sum(np.exp(ZL), axis=1, keepdims=True)  # Softmax activation
+    A_final = np.exp(ZL) / np.sum(np.exp(ZL), axis=1, keepdims=True) 
 
-    # Cross-entropy loss
     log_likelihood = -np.log(A_final[range(m), Y])
     loss = np.sum(log_likelihood) / m
     return loss
 
-# Gradient calculation for cross entropy
 def gradCE(X, Y, weights):
     Ws, bs = unpack(weights)
     m = X.shape[0]
 
-    # Forward pass
     A = X
     cache_A = [A]
     cache_Z = []
 
-    # Loop through hidden layers and apply ReLU activation
     for W, b in zip(Ws[:-1], bs[:-1]):
         Z = np.dot(A, W.T) + b
         A = np.maximum(Z, 0)
         cache_A.append(A)
         cache_Z.append(Z)
 
-    # Output layer (Softmax)
     ZL = np.dot(A, Ws[-1].T) + bs[-1]
     A_final = np.exp(ZL) / np.sum(np.exp(ZL), axis=1, keepdims=True)
 
-    # Backward pass (gradients)
     grads_W = []
     grads_b = []
 
-    # Gradient for output layer
     dZL = A_final
     dZL[range(m), Y] -= 1
     dZL /= m
@@ -119,7 +109,6 @@ def gradCE(X, Y, weights):
     all_gradients = np.hstack([g.flatten() for g in grads_W] + [g.flatten() for g in grads_b])
     return all_gradients
 
-# Training the model
 def train(trainX, trainY, weights, testX, testY, lr=5e-2, epochs=100, batch_size=128):
     m = trainX.shape[0]
 
@@ -139,7 +128,6 @@ def train(trainX, trainY, weights, testX, testY, lr=5e-2, epochs=100, batch_size
 
     return weights
 
-# Function to predict the class labels
 def predict(X, weights):
     Ws, bs = unpack(weights)
     A = X
@@ -151,7 +139,6 @@ def predict(X, weights):
     A_final = np.exp(ZL) / np.sum(np.exp(ZL), axis=1, keepdims=True)
     return np.argmax(A_final, axis=1)
 
-# Initialize weights and biases with float32
 def initWeightsAndBiases():
     Ws = []
     bs = []
@@ -175,8 +162,29 @@ def initWeightsAndBiases():
 
     return Ws, bs
 
+def show_W0(weights):
 
-# Main execution
+    Ws, _ = unpack(weights)
+    W0 = Ws[0]
+
+    num_filters = W0.shape[0]
+    grid_size = int(np.ceil(np.sqrt(num_filters)))
+
+    fig, axes = plt.subplots(grid_size, grid_size, figsize=(10, 10))
+
+    for i in range(grid_size * grid_size):
+        ax = axes[i // grid_size, i % grid_size]
+        if i < num_filters:
+            weight_image = W0[i].reshape(28, 28)
+            ax.imshow(weight_image, cmap='gray')
+            ax.axis('off')
+        else:
+            ax.axis('off')
+
+    plt.tight_layout()
+    # using turing
+    plt.savefig('W0.png')
+
 if __name__ == "__main__":
     trainX = np.load('fashion_mnist_train_images.npy').astype(np.float32)
     trainY = np.load('fashion_mnist_train_labels.npy')
@@ -189,7 +197,6 @@ if __name__ == "__main__":
     Ws, bs = initWeightsAndBiases()
     weights = np.hstack([W.flatten() for W in Ws] + [b.flatten() for b in bs])
 
-    # Gradient checking on a small sample
     check_grad_result = scipy.optimize.check_grad(
         lambda w_: fCE(trainX[:2], trainY[:2], w_),
         lambda w_: gradCE(trainX[:2], trainY[:2], w_),
@@ -197,9 +204,6 @@ if __name__ == "__main__":
     )
     print(f'Gradient check discrepancy: {check_grad_result:.6f}')
 
-    # Train the model
     weights = train(trainX, trainY, weights, testX, testY)
 
-
-    # Show learned weights
-    # show_W0(weights)
+    show_W0(weights)
