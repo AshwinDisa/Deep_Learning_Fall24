@@ -18,7 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pdb
 
-from train import CNNPolicyNet
+from homework4_amdisa_dtbhangale import CNNPolicyNet
 
 # class CNNPolicyNet(nn.Module):
 #     def __init__(self, numActions):

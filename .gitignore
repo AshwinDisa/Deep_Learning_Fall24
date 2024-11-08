@@ -5,3 +5,6 @@ transcripts/
 *.txt
 *.jpeg
 *.pt
+/train_data
+/test_data
+/data
